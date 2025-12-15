@@ -664,6 +664,18 @@ export default function ProductDetail() {
             {/* Product Details Tabs */}
                   {(product.detailed_description || productFeatures.length > 0 || height || width || weight) && (
                     <div className="mb-6">
+                      {/* Selected Variant Info */}
+                      {selectedVariant && (
+                        <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-2">
+                            <Crown className="w-5 h-5 text-primary" />
+                            <span className="font-medium">
+                              {selectedVariant.attribute_name}: {selectedVariant.value_name}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="flex border-b border-border">
                         {product.detailed_description && (
                           <button

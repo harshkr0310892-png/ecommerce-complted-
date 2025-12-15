@@ -143,14 +143,9 @@ export function VariantSelector({ productId, basePrice, onVariantChange }: Varia
                 <img src={attr.icon_url} alt="" className="w-5 h-5 object-contain" />
               )}
               <span className="font-medium">{attr.name}:</span>
-              {selectedValues[attr.id] && (
-                <span className="text-primary font-semibold">
-                  {attributeValues?.find(v => v.id === selectedValues[attr.id])?.value}
-                </span>
-              )}
             </div>
             
-            <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
               {values.map(val => {
                 const variant = getVariantForValue(val.id);
                 const isSelected = selectedValues[attr.id] === val.id;
@@ -163,7 +158,7 @@ export function VariantSelector({ productId, basePrice, onVariantChange }: Varia
                     onClick={() => !isUnavailable && handleSelect(attr.id, val.id)}
                     disabled={isUnavailable}
                     className={cn(
-                      "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all",
+                      "flex items-center justify-between w-full px-4 py-3 rounded-lg border-2 text-left transition-all",
                       isSelected
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border hover:border-primary/50",
@@ -171,15 +166,17 @@ export function VariantSelector({ productId, basePrice, onVariantChange }: Varia
                       isOutOfStock && !isUnavailable && "bg-muted"
                     )}
                   >
-                    {val.value}
-                    {variant && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        ₹{variant.price}
-                      </span>
-                    )}
-                    {isOutOfStock && !isUnavailable && (
-                      <span className="ml-1 text-xs text-destructive">(Out)</span>
-                    )}
+                    <span className="font-medium">{val.value}</span>
+                    <div className="flex items-center gap-2">
+                      {variant && (
+                        <span className="text-sm font-medium">
+                          ₹{variant.price}
+                        </span>
+                      )}
+                      {isOutOfStock && !isUnavailable && (
+                        <span className="text-xs text-destructive">(Out)</span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
