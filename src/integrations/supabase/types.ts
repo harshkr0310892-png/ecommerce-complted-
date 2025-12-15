@@ -399,6 +399,7 @@ export type Database = {
           price: number
           product_id: string
           stock_quantity: number | null
+          image_urls: Json | null
         }
         Insert: {
           attribute_value_id: string
@@ -408,6 +409,7 @@ export type Database = {
           price: number
           product_id: string
           stock_quantity?: number | null
+          image_urls?: Json | null
         }
         Update: {
           attribute_value_id?: string
@@ -417,6 +419,7 @@ export type Database = {
           price?: number
           product_id?: string
           stock_quantity?: number | null
+          image_urls?: Json | null
         }
         Relationships: [
           {

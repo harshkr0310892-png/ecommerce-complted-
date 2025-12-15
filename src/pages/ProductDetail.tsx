@@ -19,6 +19,7 @@ interface SelectedVariant {
   is_available: boolean;
   attribute_name: string;
   value_name: string;
+  image_urls?: string[];
 }
 
 export default function ProductDetail() {
@@ -88,6 +89,7 @@ export default function ProductDetail() {
         is_available: variant.is_available,
         attribute_name: attributeName,
         value_name: valueName,
+        image_urls: Array.isArray(variant.image_urls) ? variant.image_urls : [],
       });
     } else {
       setSelectedVariant(null);
@@ -185,10 +187,18 @@ export default function ProductDetail() {
     : product?.stock_status === 'low_stock';
   const stockQuantity = selectedVariant ? selectedVariant.stock_quantity : (product?.stock_quantity || 0);
   
-  // Get all images - combine images array with legacy image_url
-  const allImages = product?.images && product.images.length > 0 
-    ? product.images 
-    : (product?.image_url ? [product.image_url] : []);
+  // Get all images - combine images array with legacy image_url and variant images
+  const allImages = (() => {
+    // If a variant is selected and has images, use those
+    if (selectedVariant && selectedVariant.image_urls && selectedVariant.image_urls.length > 0) {
+      return selectedVariant.image_urls;
+    }
+    
+    // Otherwise use product images
+    return product?.images && product.images.length > 0 
+      ? product.images 
+      : (product?.image_url ? [product.image_url] : []);
+  })();
 
   const nextImage = () => {
     if (!allImages.length) return;

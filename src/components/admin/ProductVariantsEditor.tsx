@@ -27,6 +27,7 @@ interface ProductVariant {
   price: number;
   stock_quantity: number;
   is_available: boolean;
+  image_urls?: string[];
 }
 
 interface ProductVariantsEditorProps {
@@ -42,6 +43,7 @@ export function ProductVariantsEditor({ productId, basePrice }: ProductVariantsE
     price: basePrice.toString(),
     stock_quantity: '0',
     is_available: true,
+    image_urls: [] as string[],
   });
 
   // Fetch attributes
@@ -76,7 +78,7 @@ export function ProductVariantsEditor({ productId, basePrice }: ProductVariantsE
     queryFn: async () => {
       const { data, error } = await supabase
         .from('product_variants')
-        .select('*')
+        .select('id, product_id, attribute_value_id, price, stock_quantity, is_available, image_urls')
         .eq('product_id', productId);
       if (error) throw error;
       return data as ProductVariant[];
@@ -93,6 +95,7 @@ export function ProductVariantsEditor({ productId, basePrice }: ProductVariantsE
         price: parseFloat(data.price),
         stock_quantity: parseInt(data.stock_quantity) || 0,
         is_available: data.is_available,
+        image_urls: data.image_urls || [],
       });
       if (error) throw error;
     },
@@ -105,6 +108,7 @@ export function ProductVariantsEditor({ productId, basePrice }: ProductVariantsE
         price: basePrice.toString(),
         stock_quantity: '0',
         is_available: true,
+        image_urls: [] as string[],
       });
     },
     onError: (error: any) => {
@@ -118,7 +122,7 @@ export function ProductVariantsEditor({ productId, basePrice }: ProductVariantsE
 
   // Update variant mutation
   const updateVariantMutation = useMutation({
-    mutationFn: async (data: { id: string; price?: number; stock_quantity?: number; is_available?: boolean }) => {
+    mutationFn: async (data: { id: string; price?: number; stock_quantity?: number; is_available?: boolean; image_urls?: string[] }) => {
       const { id, ...updates } = data;
       const { error } = await supabase
         .from('product_variants')
@@ -145,6 +149,89 @@ export function ProductVariantsEditor({ productId, basePrice }: ProductVariantsE
     },
     onError: () => toast.error('Failed to delete variant'),
   });
+
+  // Add image upload handler
+  const handleImageUpload = async (file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `variant-images/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      toast.error('Error uploading image');
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
+  // Add image to new variant
+  const addImageToNewVariant = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    const url = await handleImageUpload(file);
+    
+    if (url) {
+      setNewVariant(prev => ({
+        ...prev,
+        image_urls: [...prev.image_urls, url]
+      }));
+    }
+    
+    // Reset input
+    e.target.value = '';
+  };
+
+  // Remove image from new variant
+  const removeImageFromNewVariant = (index: number) => {
+    setNewVariant(prev => ({
+      ...prev,
+      image_urls: prev.image_urls.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Add image to existing variant
+  const addImageToVariant = async (variantId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    const url = await handleImageUpload(file);
+    
+    if (url) {
+      const variant = variants?.find(v => v.id === variantId);
+      if (variant) {
+        const currentImages = Array.isArray(variant.image_urls) ? variant.image_urls : [];
+        updateVariantMutation.mutate({
+          id: variantId,
+          image_urls: [...currentImages, url]
+        });
+      }
+    }
+    
+    // Reset input
+    e.target.value = '';
+  };
+
+  // Remove image from existing variant
+  const removeImageFromVariant = (variantId: string, index: number) => {
+    const variant = variants?.find(v => v.id === variantId);
+    if (variant) {
+      const currentImages = Array.isArray(variant.image_urls) ? variant.image_urls : [];
+      const updatedImages = currentImages.filter((_, i) => i !== index);
+      updateVariantMutation.mutate({
+        id: variantId,
+        image_urls: updatedImages
+      });
+    }
+  };
 
   const getValuesForAttribute = (attributeId: string) => {
     return attributeValues?.filter(v => v.attribute_id === attributeId) || [];
@@ -258,53 +345,131 @@ export function ProductVariantsEditor({ productId, basePrice }: ProductVariantsE
           </div>
         </div>
 
+        {/* Image Upload for New Variant */}
+        <div className="border-t border-border/50 pt-4 mt-4">
+          <Label>Variant Images (Max 4)</Label>
+          <div className="mt-2 grid grid-cols-4 gap-2">
+            {newVariant.image_urls.map((url, index) => (
+              <div key={index} className="relative group">
+                <img 
+                  src={url} 
+                  alt={`Variant ${index + 1}`} 
+                  className="w-full h-20 object-cover rounded border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute -top-2 -right-2 w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => removeImageFromNewVariant(index)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+            {newVariant.image_urls.length < 4 && (
+              <label className="flex items-center justify-center w-full h-20 border-2 border-dashed rounded cursor-pointer hover:bg-muted/50 transition-colors">
+                <Plus className="w-5 h-5 text-muted-foreground" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={addImageToNewVariant}
+                  disabled={newVariant.image_urls.length >= 4}
+                />
+              </label>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Upload up to 4 images for this variant. These will be shown when this variant is selected.
+          </p>
+        </div>
+
         {/* Existing Variants List */}
         {variantsLoading ? (
           <div className="flex justify-center py-4">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : variants && variants.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {variants.map((variant) => (
               <div
                 key={variant.id}
-                className="flex items-center gap-4 p-3 bg-card rounded-lg border border-border/50"
+                className="p-4 bg-card rounded-lg border border-border/50"
               >
-                <div className="flex-1">
-                  <span className="font-medium">
-                    {getAttributeName(variant.attribute_value_id)}: {getValueName(variant.attribute_value_id)}
-                  </span>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <span className="font-medium">
+                      {getAttributeName(variant.attribute_value_id)}: {getValueName(variant.attribute_value_id)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <Input
+                        type="number"
+                        value={variant.price}
+                        onChange={(e) => updateVariantMutation.mutate({ id: variant.id, price: parseFloat(e.target.value) })}
+                        className="w-24 text-right"
+                      />
+                    </div>
+                    <div>
+                      <Input
+                        type="number"
+                        value={variant.stock_quantity}
+                        onChange={(e) => updateVariantMutation.mutate({ id: variant.id, stock_quantity: parseInt(e.target.value) || 0 })}
+                        className="w-20 text-right"
+                      />
+                    </div>
+                    <Switch
+                      checked={variant.is_available}
+                      onCheckedChange={(checked) => updateVariantMutation.mutate({ id: variant.id, is_available: checked })}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive"
+                      onClick={() => deleteVariantMutation.mutate(variant.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <Input
-                      type="number"
-                      value={variant.price}
-                      onChange={(e) => updateVariantMutation.mutate({ id: variant.id, price: parseFloat(e.target.value) })}
-                      className="w-24 text-right"
-                      prefix="₹"
-                    />
+                
+                {/* Image Upload for Existing Variant */}
+                <div className="mt-4 pt-4 border-t border-border/30">
+                  <Label className="text-xs">Variant Images</Label>
+                  <div className="mt-2 grid grid-cols-4 gap-2">
+                    {Array.isArray(variant.image_urls) && variant.image_urls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={url} 
+                          alt={`Variant ${index + 1}`} 
+                          className="w-full h-16 object-cover rounded border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImageFromVariant(variant.id, index)}
+                        >
+                          <Trash2 className="w-2 h-2" />
+                        </Button>
+                      </div>
+                    ))}
+                    {(Array.isArray(variant.image_urls) ? variant.image_urls.length : 0) < 4 && (
+                      <label className="flex items-center justify-center w-full h-16 border-2 border-dashed rounded cursor-pointer hover:bg-muted/50 transition-colors">
+                        <Plus className="w-4 h-4 text-muted-foreground" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => addImageToVariant(variant.id, e)}
+                          disabled={(Array.isArray(variant.image_urls) ? variant.image_urls.length : 0) >= 4}
+                        />
+                      </label>
+                    )}
                   </div>
-                  <div>
-                    <Input
-                      type="number"
-                      value={variant.stock_quantity}
-                      onChange={(e) => updateVariantMutation.mutate({ id: variant.id, stock_quantity: parseInt(e.target.value) || 0 })}
-                      className="w-20 text-right"
-                    />
-                  </div>
-                  <Switch
-                    checked={variant.is_available}
-                    onCheckedChange={(checked) => updateVariantMutation.mutate({ id: variant.id, is_available: checked })}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive"
-                    onClick={() => deleteVariantMutation.mutate(variant.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               </div>
             ))}

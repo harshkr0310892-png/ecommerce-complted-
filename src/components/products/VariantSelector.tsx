@@ -22,6 +22,7 @@ interface ProductVariant {
   price: number;
   stock_quantity: number;
   is_available: boolean;
+  image_urls?: string[];
 }
 
 interface VariantSelectorProps {
@@ -65,7 +66,7 @@ export function VariantSelector({ productId, basePrice, onVariantChange }: Varia
     queryFn: async () => {
       const { data, error } = await supabase
         .from('product_variants')
-        .select('*')
+        .select('id, product_id, attribute_value_id, price, stock_quantity, is_available, image_urls')
         .eq('product_id', productId);
       if (error) throw error;
       return data as ProductVariant[];
