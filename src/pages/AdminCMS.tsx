@@ -187,17 +187,37 @@ export default function AdminCMS() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file (JPEG, PNG, WEBP)');
+      return;
+    }
+
+    // Validate file size (10MB max for banner images)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size must be less than 10MB for optimal quality');
+      return;
+    }
+
     setUploadingImage(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
+      // For banner images, we want to preserve quality
+      const uploadOptions = {
+        cacheControl: '3600',
+        upsert: false
+      };
+
       const { error: uploadError } = await supabase.storage
         .from('cms-images')
-        .upload(fileName, file);
+        .upload(fileName, file, uploadOptions);
 
       if (uploadError) throw uploadError;
 
+      // Get the public URL without transformations for storage in DB
+      // Transformations will be applied at display time in BannerCarousel
       const { data: { publicUrl } } = supabase.storage
         .from('cms-images')
         .getPublicUrl(fileName);
@@ -208,10 +228,10 @@ export default function AdminCMS() {
         setPopupForm({ ...popupForm, image_url: publicUrl });
       }
       
-      toast.success('Image uploaded!');
+      toast.success('Image uploaded successfully!');
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
+      toast.error('Failed to upload image. Please try again.');
     } finally {
       setUploadingImage(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

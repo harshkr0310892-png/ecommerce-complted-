@@ -42,6 +42,14 @@ interface Product {
   category_id: string | null;
   created_at: string;
   cash_on_delivery?: boolean;
+  // Add new fields
+  features?: { feature: string }[] | null;
+  detailed_description?: string | null;
+  dimensions?: string | null;
+  // Add separate fields for dimensions
+  height?: string | null;
+  width?: string | null;
+  weight?: string | null;
 }
 
 interface Category {
@@ -163,13 +171,46 @@ export default function AdminDashboard() {
     stock_quantity: '0',
     category_id: '',
     cash_on_delivery: false,
+    // Add new fields
+    features: [{ feature: '' }],
+    detailed_description: '',
+    // Replace dimensions with separate fields
+    height: '',
+    width: '',
+    weight: '',
   });
+  // Add handler functions for features
+  const addFeature = () => {
+    setProductForm({
+      ...productForm,
+      features: [...productForm.features, { feature: '' }]
+    });
+  };
+
+  const removeFeature = (index: number) => {
+    const newFeatures = [...productForm.features];
+    newFeatures.splice(index, 1);
+    setProductForm({
+      ...productForm,
+      features: newFeatures
+    });
+  };
+
+  const updateFeature = (index: number, value: string) => {
+    const newFeatures = [...productForm.features];
+    newFeatures[index] = { feature: value };
+    setProductForm({
+      ...productForm,
+      features: newFeatures
+    });
+  };
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     description: '',
     sort_order: '0',
     is_active: true,
   });
+
   const [couponForm, setCouponForm] = useState({
     code: '',
     discount_type: 'percentage',
@@ -205,11 +246,12 @@ export default function AdminDashboard() {
       navigate('/admin');
     }
   }, [navigate]);
-
   const handleLogout = () => {
     sessionStorage.removeItem('admin_logged_in');
     navigate('/admin');
   };
+
+  // Fetch products
 
   // Fetch products
   const { data: products, isLoading: productsLoading, refetch: refetchProducts } = useQuery({
@@ -220,7 +262,11 @@ export default function AdminDashboard() {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as Product[];
+      // Transform features data to match the expected type
+      return data.map(product => ({
+        ...product,
+        features: Array.isArray(product.features) ? product.features.map((f: any) => ({ feature: typeof f === 'string' ? f : f.feature || '' })) : [{ feature: '' }],
+      })) as unknown as Product[];
     },
   });
 
@@ -507,6 +553,17 @@ export default function AdminDashboard() {
         stock_quantity: parseInt(product.stock_quantity) || 0,
         category_id: product.category_id || null,
         cash_on_delivery: product.cash_on_delivery || false,
+        // Add new fields
+        features: product.features,
+        detailed_description: product.detailed_description || null,
+        // Save dimensions as a combined string for backward compatibility
+        dimensions: product.height || product.width || product.weight 
+          ? `${product.height || ''} x ${product.width || ''} x ${product.weight || ''}`.replace(/x\s*x/g, 'x').replace(/^\s*x\s*|\s*x\s*$/g, '') || null
+          : null,
+        // Also save individual fields
+        height: product.height || null,
+        width: product.width || null,
+        weight: product.weight || null,
       };
 
       if (product.id) {
@@ -792,6 +849,13 @@ export default function AdminDashboard() {
       stock_quantity: '0',
       category_id: '',
       cash_on_delivery: false,
+      // Add new fields
+      features: [{ feature: '' }],
+      detailed_description: '',
+      // Replace dimensions with separate fields
+      height: '',
+      width: '',
+      weight: '',
     });
     setProductImages([]);
     setEditingProduct(null);
@@ -821,6 +885,13 @@ export default function AdminDashboard() {
       stock_quantity: (product.stock_quantity || 0).toString(),
       category_id: product.category_id || '',
       cash_on_delivery: product.cash_on_delivery || false,
+      // Add new fields
+      features: product.features && product.features.length > 0 ? product.features : [{ feature: '' }],
+      detailed_description: product.detailed_description || '',
+      // Replace dimensions with separate fields
+      height: product.height || '',
+      width: product.width || '',
+      weight: product.weight || '',
     });
     setProductImages(product.images || (product.image_url ? [product.image_url] : []));
     setProductDialogOpen(true);
@@ -1082,6 +1153,87 @@ export default function AdminDashboard() {
                           className="mt-1"
                           rows={3}
                         />
+                      </div>
+                      
+                      {/* Detailed Description */}
+                      <div>
+                        <Label htmlFor="detailed_description">Detailed Description</Label>
+                        <Textarea
+                          id="detailed_description"
+                          value={productForm.detailed_description}
+                          onChange={(e) => setProductForm({ ...productForm, detailed_description: e.target.value })}
+                          placeholder="Enter detailed product description"
+                          className="mt-1"
+                          rows={4}
+                        />
+                      </div>
+                      
+                      {/* Features Section */}
+                      <div>
+                        <Label>Features</Label>
+                        <div className="space-y-2 mt-1">
+                          {productForm.features.map((feature, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input
+                                value={feature.feature}
+                                onChange={(e) => updateFeature(index, e.target.value)}
+                                placeholder="Enter a feature"
+                                className="flex-1"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => removeFeature(index)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={addFeature}
+                            className="w-full"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Feature
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Dimensions - Separate Fields */}
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="height">Height</Label>
+                          <Input
+                            id="height"
+                            value={productForm.height}
+                            onChange={(e) => setProductForm({ ...productForm, height: e.target.value })}
+                            placeholder="e.g., 10 cm"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="width">Width</Label>
+                          <Input
+                            id="width"
+                            value={productForm.width}
+                            onChange={(e) => setProductForm({ ...productForm, width: e.target.value })}
+                            placeholder="e.g., 5 cm"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="weight">Weight</Label>
+                          <Input
+                            id="weight"
+                            value={productForm.weight}
+                            onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
+                            placeholder="e.g., 2 kg"
+                            className="mt-1"
+                          />
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>

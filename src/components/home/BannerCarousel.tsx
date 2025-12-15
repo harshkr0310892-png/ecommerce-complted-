@@ -14,6 +14,25 @@ interface Banner {
   link_url: string | null;
 }
 
+// Function to transform image URL for better quality
+const getTransformedImageUrl = (imageUrl: string, width: number, height: number) => {
+  try {
+    const url = new URL(imageUrl);
+    // Check if it's a Supabase storage URL
+    if (url.hostname.includes('supabase')) {
+      // Add transformation parameters for better quality
+      url.searchParams.set('width', width.toString());
+      url.searchParams.set('height', height.toString());
+      url.searchParams.set('quality', '90');
+      url.searchParams.set('resize', 'cover');
+    }
+    return url.toString();
+  } catch (error) {
+    // If URL parsing fails, return original URL
+    return imageUrl;
+  }
+};
+
 export function BannerCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -60,9 +79,12 @@ export function BannerCarousel() {
   const BannerContent = () => (
     <div className="relative w-full aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden">
       <img
-        src={currentBanner.image_url}
+        // Use transformed image URL for better quality
+        src={getTransformedImageUrl(currentBanner.image_url, 1920, 1080)}
         alt={currentBanner.title || 'Banner'}
         className="w-full h-full object-cover transition-transform duration-700"
+        // Add loading optimization
+        loading="eager"
       />
       
       {/* Overlay */}
