@@ -26,15 +26,15 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-gradient-to-r from-green-50/20 via-card/10 to-emerald-50/20 dark:from-green-900/10 dark:via-card/5 dark:to-emerald-900/10 backdrop-blur-xl">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-2 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-emerald-700 dark:from-green-500 dark:to-emerald-600 flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-green-600 to-emerald-700 dark:from-green-500 dark:to-emerald-600 flex items-center justify-center flex-shrink-0">
+              <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <span className="font-display text-2xl font-bold bg-gradient-to-r from-green-700 to-emerald-800 dark:from-green-400 dark:to-emerald-300 bg-clip-text text-transparent">
-              Royal Eco Store
+            <span className="font-display text-lg sm:text-2xl font-bold bg-gradient-to-r from-green-700 to-emerald-800 dark:from-green-400 dark:to-emerald-300 bg-clip-text text-transparent whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px] sm:max-w-none">
+              Royal Eco<span className="hidden sm:inline"> Store</span>
             </span>
           </Link>
 
@@ -71,13 +71,15 @@ export const Header = () => {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="scale-90 sm:scale-100">
+              <ThemeToggle />
+            </div>
             <Link to="/wishlist" className="relative">
               <Button variant="ghost" size="icon" className="relative hover:bg-gradient-to-br hover:from-green-600/20 hover:to-emerald-700/20 dark:hover:from-green-500/20 dark:hover:to-emerald-600/20">
-                <Heart className="w-5 h-5" />
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
                 {wishlistItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-green-600 to-emerald-700 dark:from-green-500 dark:to-emerald-600 text-white text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-green-600 to-emerald-700 dark:from-green-500 dark:to-emerald-600 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center">
                     {wishlistItems.length}
                   </span>
                 )}
@@ -85,9 +87,9 @@ export const Header = () => {
             </Link>
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon" className="relative hover:bg-gradient-to-br hover:from-green-600/20 hover:to-emerald-700/20 dark:hover:from-green-500/20 dark:hover:to-emerald-600/20">
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-green-600 to-emerald-700 dark:from-green-500 dark:to-emerald-600 text-white text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-green-600 to-emerald-700 dark:from-green-500 dark:to-emerald-600 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center">
                     {cartItemCount}
                   </span>
                 )}
@@ -99,7 +101,7 @@ export const Header = () => {
               className="md:hidden hover:bg-gradient-to-br hover:from-green-600/20 hover:to-emerald-700/20 dark:hover:from-green-500/20 dark:hover:to-emerald-600/20"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </Button>
           </div>
         </div>
@@ -107,40 +109,40 @@ export const Header = () => {
         {/* Mobile Navigation */}
         <div className={cn(
           "md:hidden overflow-hidden transition-all duration-300",
-          mobileMenuOpen ? "max-h-96 pb-6" : "max-h-0"
+          mobileMenuOpen ? "max-h-96 pb-4" : "max-h-0"
         )}>
           <nav className="flex flex-col gap-4 mb-4">
             <Link 
               to="/" 
-              className="font-display text-lg text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
+              className="font-display text-base text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </Link>
             <Link 
               to="/products" 
-              className="font-display text-lg text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
+              className="font-display text-base text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Collection
             </Link>
             <Link 
               to="/wishlist" 
-              className="font-display text-lg text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
+              className="font-display text-base text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Wishlist
             </Link>
             <Link 
               to="/track-order" 
-              className="font-display text-lg text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
+              className="font-display text-base text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Track Order
             </Link>
             <Link 
               to="/contact-us" 
-              className="font-display text-lg text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
+              className="font-display text-base text-foreground/80 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact Us
