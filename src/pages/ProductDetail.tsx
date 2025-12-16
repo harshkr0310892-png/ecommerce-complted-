@@ -661,113 +661,7 @@ export default function ProductDetail() {
               </p>
             )}
             
-            {/* Product Details Tabs */}
-                  {(product.detailed_description || productFeatures.length > 0 || height || width || weight) && (
-                    <div className="mb-6">
-                      {/* Selected Variant Info */}
-                      {selectedVariant && (
-                        <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border">
-                          <div className="flex items-center gap-2">
-                            <Crown className="w-5 h-5 text-primary" />
-                            <span className="font-medium">
-                              {selectedVariant.attribute_name}: {selectedVariant.value_name}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex border-b border-border">
-                        {product.detailed_description && (
-                          <button
-                            className={cn(
-                              "px-4 py-2 text-sm font-medium transition-colors",
-                              activeTab === 'description' 
-                                ? "text-primary border-b-2 border-primary" 
-                                : "text-muted-foreground hover:text-foreground"
-                            )}
-                            onClick={() => setActiveTab('description')}
-                          >
-                            Description
-                          </button>
-                        )}
                         
-                        {productFeatures.length > 0 && (
-                          <button
-                            className={cn(
-                              "px-4 py-2 text-sm font-medium transition-colors",
-                              activeTab === 'features' 
-                                ? "text-primary border-b-2 border-primary" 
-                                : "text-muted-foreground hover:text-foreground"
-                            )}
-                            onClick={() => setActiveTab('features')}
-                          >
-                            Features
-                          </button>
-                        )}
-                        
-                        {(height || width || weight) && (
-                          <button
-                            className={cn(
-                              "px-4 py-2 text-sm font-medium transition-colors",
-                              activeTab === 'dimensions' 
-                                ? "text-primary border-b-2 border-primary" 
-                                : "text-muted-foreground hover:text-foreground"
-                            )}
-                            onClick={() => setActiveTab('dimensions')}
-                          >
-                            Dimensions
-                          </button>
-                        )}
-                      </div>
-                      
-                      <div className="mt-4">
-                        {activeTab === 'description' && product.detailed_description && (
-                          <div>
-                            <p className="text-muted-foreground leading-relaxed">
-                              {product.detailed_description}
-                            </p>
-                          </div>
-                        )}
-                        
-                        {activeTab === 'features' && productFeatures.length > 0 && (
-                          <div>
-                            <ul className="space-y-2">
-                              {productFeatures.map((feature: string, index: number) => (
-                                <li key={index} className="flex items-start gap-2">
-                                  <Crown className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                                  <span className="text-muted-foreground">{feature}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        
-                        {activeTab === 'dimensions' && (height || width || weight) && (
-                          <div className="grid grid-cols-3 gap-4">
-                            {height && (
-                              <div>
-                                <h4 className="font-medium text-foreground mb-1">Height</h4>
-                                <p className="text-muted-foreground">{height}</p>
-                              </div>
-                            )}
-                            {width && (
-                              <div>
-                                <h4 className="font-medium text-foreground mb-1">Width</h4>
-                                <p className="text-muted-foreground">{width}</p>
-                              </div>
-                            )}
-                            {weight && (
-                              <div>
-                                <h4 className="font-medium text-foreground mb-1">Weight</h4>
-                                <p className="text-muted-foreground">{weight}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-            
             {/* Variant Selector */}
             <div className="mb-6">
               <VariantSelector 
@@ -828,6 +722,113 @@ export default function ProductDetail() {
                 {isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
               </Button>
             </div>
+
+            {/* Product Details Tabs */}
+            {(product.detailed_description || productFeatures.length > 0 || height || width || weight) && (
+              <div className="mb-6">
+                {/* Selected Variant Info */}
+                {selectedVariant && (
+                  <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border">
+                    <div className="flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-primary" />
+                      <span className="font-medium">
+                        {selectedVariant.attribute_name}: {selectedVariant.value_name}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex border-b border-border">
+                  {product.detailed_description && (
+                    <button
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium transition-colors",
+                        activeTab === 'description' 
+                          ? "text-primary border-b-2 border-primary" 
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      onClick={() => setActiveTab('description')}
+                    >
+                      Description
+                    </button>
+                  )}
+                  
+                  {productFeatures.length > 0 && (
+                    <button
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium transition-colors",
+                        activeTab === 'features' 
+                          ? "text-primary border-b-2 border-primary" 
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      onClick={() => setActiveTab('features')}
+                    >
+                      Features
+                    </button>
+                  )}
+                  
+                  {(height || width || weight) && (
+                    <button
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium transition-colors",
+                        activeTab === 'dimensions' 
+                          ? "text-primary border-b-2 border-primary" 
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      onClick={() => setActiveTab('dimensions')}
+                    >
+                      Dimensions
+                    </button>
+                  )}
+                </div>
+                
+                <div className="mt-4">
+                  {activeTab === 'description' && product.detailed_description && (
+                    <div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {product.detailed_description}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {activeTab === 'features' && productFeatures.length > 0 && (
+                    <div>
+                      <ul className="space-y-2">
+                        {productFeatures.map((feature: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <Crown className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                            <span className="text-muted-foreground">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {activeTab === 'dimensions' && (height || width || weight) && (
+                    <div className="grid grid-cols-3 gap-4">
+                      {height && (
+                        <div>
+                          <h4 className="font-medium text-foreground mb-1">Height</h4>
+                          <p className="text-muted-foreground">{height}</p>
+                        </div>
+                      )}
+                      {width && (
+                        <div>
+                          <h4 className="font-medium text-foreground mb-1">Width</h4>
+                          <p className="text-muted-foreground">{width}</p>
+                        </div>
+                      )}
+                      {weight && (
+                        <div>
+                          <h4 className="font-medium text-foreground mb-1">Weight</h4>
+                          <p className="text-muted-foreground">{weight}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Features */}
             <div className="mt-10 pt-8 border-t border-border/50">
